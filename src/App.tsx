@@ -197,8 +197,10 @@ function App() {
             type="range"
           /><br />
         </div>
-        <ReactP5Wrapper sketch={sketch_input} inputstr={inputA} headSize={inputHeadSize} headDistance={inputHeadDistance} />
-        <ReactP5Wrapper sketch={sketch_output} output={outputObject} headSize={inputHeadSize} headDistance={inputHeadDistance} />
+        <div className='sketchCanvas'>
+          <ReactP5Wrapper sketch={sketch_input} inputstr={inputA} headSize={inputHeadSize} headDistance={inputHeadDistance} />
+          <ReactP5Wrapper sketch={sketch_output} output={outputObject} headSize={inputHeadSize} headDistance={inputHeadDistance} />
+        </div>
       </main>
       <footer>
         <a href="https://googology.fandom.com/ja/wiki/%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%83%96%E3%83%AD%E3%82%B0:%E7%AB%B9%E5%8F%96%E7%BF%81/Goal%E9%96%A2%E6%95%B0" target="_blank" rel="noreferrer">Definition of "Goal Function"</a> by <a href="https://googology.fandom.com/ja/wiki/%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC:%E7%AB%B9%E5%8F%96%E7%BF%81" target="_blank" rel="noreferrer">竹取翁</a>, Retrieved 2024/06/6 <br />

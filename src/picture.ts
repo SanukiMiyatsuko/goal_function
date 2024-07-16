@@ -4,44 +4,61 @@ import { MySketchProps } from "./App";
 import { ONE, T, Z, equal, sanitize_plus_term } from "./code";
 import { Scanner } from "./parse";
 
+const DEFAULT_FRAME_RATE = 60;
+
 export const sketch_input = (p: P5CanvasInstance<MySketchProps>) => {
     let input = "";
     let nodeSize = 60;
     let nodeDistance = 90;
+    let update = true;
+
     p.setup = () => {
         p.createCanvas(0, 0);
-        p.textAlign("center", "center");
+        p.textAlign(p.CENTER, p.CENTER);
+        p.frameRate(DEFAULT_FRAME_RATE);
     };
 
     p.updateWithProps = props => {
-        input = props.inputstr;
-        nodeSize = props.headSize;
-        nodeDistance = props.headDistance;
+        const inp = input;
+        const ns = nodeSize;
+        const nd = nodeDistance;
+        ({
+            inputstr: input,
+            headSize: nodeSize,
+            headDistance: nodeDistance,
+        } = props);
+        if (
+            inp !== input ||
+            ns !== nodeSize ||
+            nd !== nodeDistance
+        ) {
+            update = true;
+        }
     };
 
     p.draw = () => {
-        p.frameRate(60);
         try {
-            const parsedInput = input ? new Scanner(input).parse_term() : null;
-            if (parsedInput === null) {
-                p.resizeCanvas(1715, 0);
-            } else {
-                let seq = [[-1,0]]
-                const op = O_RTtoST(parsedInput);
-                if (op === null) {
-                    p.resizeCanvas(1715, 40);
-                    p.fill(0);
-                    p.textSize(20);
-                    p.text("ヒドラで表示できない項です", 200, 20);
+            if (update) {
+                const parsedInput = input ? new Scanner(input).parse_term() : null;
+                if (parsedInput === null) {
+                    p.resizeCanvas(0, 0);
                 } else {
-                    seq = seq.concat(op);
-                    p.resizeCanvas(1715, canvasdepth(seq, nodeDistance));
-                    drawKurage(seq, p, nodeSize, nodeDistance);
+                    let seq = [[-1,0]]
+                    const op = O_RTtoST(parsedInput);
+                    if (op === null) {
+                        p.resizeCanvas(330, 40);
+                        p.fill(0);
+                        p.textSize(20);
+                        p.text("ヒドラで表示できない項です", 130, 15);
+                    } else {
+                        seq = seq.concat(op);
+                        p.resizeCanvas(seqLeng(seq, nodeDistance), canvasdepth(seq, nodeDistance));
+                        drawKurage(seq, p, nodeSize, nodeDistance);
+                    }
                 }
             }
         } catch (e) {
-            if (e instanceof Error) console.log(e.message);
-            else console.log("不明なエラー");
+            console.error("Error in draw function:", e);
         }
     }
 }
@@ -50,39 +67,54 @@ export const sketch_output = (p: P5CanvasInstance<MySketchProps>) => {
     let outPut: T = Z;
     let nodeSize = 60;
     let nodeDistance = 90;
+    let update = true;
+
     p.setup = () => {
         p.createCanvas(0, 0);
-        p.textAlign("center", "center");
+        p.textAlign(p.CENTER, p.CENTER);
+        p.frameRate(DEFAULT_FRAME_RATE);
     };
 
     p.updateWithProps = props => {
-        outPut = props.output;
-        nodeSize = props.headSize;
-        nodeDistance = props.headDistance;
+        const outp = outPut;
+        const ns = nodeSize;
+        const nd = nodeDistance;
+        ({
+            output: outPut,
+            headSize: nodeSize,
+            headDistance: nodeDistance,
+        } = props);
+        if (
+            !equal(outp, outPut) ||
+            ns !== nodeSize ||
+            nd !== nodeDistance
+        ) {
+            update = true;
+        }
     };
 
     p.draw = () => {
-        p.frameRate(10);
         try {
-            if (equal(outPut, Z)) {
-                p.resizeCanvas(1715, 0);
-            } else {
-                let seq = [[-1,0]]
-                const op = O_RTtoST(outPut);
-                if (op === null) {
-                    p.resizeCanvas(1715, 40);
-                    p.fill(0);
-                    p.textSize(20);
-                    p.text("ヒドラで表示できない項です", 200, 20);
+            if (update) {
+                if (equal(outPut, Z)) {
+                    p.resizeCanvas(0, 0);
                 } else {
-                    seq = seq.concat(op);
-                    p.resizeCanvas(1715, canvasdepth(seq, nodeDistance));
-                    drawKurage(seq, p, nodeSize, nodeDistance);
+                    let seq = [[-1,0]]
+                    const op = O_RTtoST(outPut);
+                    if (op === null) {
+                        p.resizeCanvas(330, 40);
+                        p.fill(0);
+                        p.textSize(20);
+                        p.text("ヒドラで表示できない項です", 130, 15);
+                    } else {
+                        seq = seq.concat(op);
+                        p.resizeCanvas(seqLeng(seq, nodeDistance), canvasdepth(seq, nodeDistance));
+                        drawKurage(seq, p, nodeSize, nodeDistance);
+                    }
                 }
             }
         } catch (e) {
-            if (e instanceof Error) console.log(e.message);
-            else console.log("不明なエラー");
+            console.error("Error in draw function:", e);
         }
     }
 }
@@ -98,6 +130,11 @@ function canvasdepth(seq: number[][], nodeMargin: number): number {
     const depthMax = depth.reduce(aryMax);
 
     return (0.5 + depthMax) * nodeMargin + 0.5 * nodeMargin;
+}
+
+function seqLeng(seq: number[][], nodeMargin: number): number {
+    if (seq.length === 0) return 0;
+    return (0.5 + seq.length) * nodeMargin;
 }
 
 function drawKurage(seq: number[][], q: p5, nodeRadius: number, nodeMargin: number) {
